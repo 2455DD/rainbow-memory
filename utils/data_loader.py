@@ -16,11 +16,12 @@ from torch.utils.data import Dataset
 logger = logging.getLogger()
 
 
-class ImageDataset(Dataset):
+class SequenceDataset(Dataset):
     def __init__(self, data_frame: pd.DataFrame, dataset: str, transform=None):
+        # NOTE: Transform暂时全部设置为None
         self.data_frame = data_frame
         self.dataset = dataset
-        self.transform = transform
+        self.transform = None
 
     def __len__(self):
         return len(self.data_frame)
@@ -30,16 +31,22 @@ class ImageDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        img_name = self.data_frame.iloc[idx]["file_name"]
+        data = self.data_frame.iloc[idx] # 这个是Collection里的json内容
+        '''
+            "label": 自动化生成的东西
+            "klass":类别名称,
+            "TOA":,
+            "Param1":
+            "Param2":
+            "Param3":
+            "Param4":
+        '''
         label = self.data_frame.iloc[idx].get("label", -1)
-
-        img_path = os.path.join("dataset", self.dataset, img_name)
-        image = PIL.Image.open(img_path).convert("RGB")
-        if self.transform:
-            image = self.transform(image)
-        sample["image"] = image
+        sample_data = data.filter(["Param1","Param2","Param3","Param4"])
+        
+        sample["data"] = sample_data 
         sample["label"] = label
-        sample["image_name"] = img_name
+        # sample["image_name"] = data_name
         return sample
 
     def get_image_class(self, y):
@@ -114,6 +121,7 @@ def get_test_datalist(args, exp_name: str, cur_iter: int) -> List:
 def get_statistics(dataset: str):
     """
     Returns statistics of the dataset given a string of dataset name. To add new dataset, please add required statistics here
+    暂时不用改，用来做图片变换的
     """
     assert dataset in [
         "mnist",
@@ -127,6 +135,7 @@ def get_statistics(dataset: str):
         "imagenet100",
         "imagenet1000",
         "TinyImagenet",
+        "pdw",
     ]
     mean = {
         "mnist": (0.1307,),
@@ -168,6 +177,7 @@ def get_statistics(dataset: str):
         "TinyImagenet": 200,
         "imagenet100": 100,
         "imagenet1000": 1000,
+        "pdw":4
     }
 
     in_channels = {
@@ -182,6 +192,7 @@ def get_statistics(dataset: str):
         "TinyImagenet": 3,
         "imagenet100": 3,
         "imagenet1000": 3,
+        "pdw":4
     }
 
     inp_size = {
