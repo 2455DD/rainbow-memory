@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from methods.finetune import Finetune
-from utils.data_loader import cutmix_data, ImageDataset
+from utils.data_loader import cutmix_data, SequenceDataset
 
 logger = logging.getLogger()
 writer = SummaryWriter("tensorboard")
@@ -42,7 +42,7 @@ class RM(Finetune):
 
     def train(self, cur_iter, n_epoch, batch_size, n_worker, n_passes=0):
         if len(self.memory_list) > 0:
-            mem_dataset = ImageDataset(
+            mem_dataset = SequenceDataset(
                 pd.DataFrame(self.memory_list),
                 dataset=self.dataset,
                 transform=self.train_transform,
@@ -114,7 +114,7 @@ class RM(Finetune):
         optimizer.zero_grad()
 
         do_cutmix = self.cutmix and np.random.rand(1) < 0.5
-        if do_cutmix:
+        if do_cutmix and False:
             x, labels_a, labels_b, lam = cutmix_data(x=x, y=y, alpha=1.0)
             logit = self.model(x)
             loss = lam * criterion(logit, labels_a) + (1 - lam) * criterion(
@@ -148,10 +148,10 @@ class RM(Finetune):
         for data in data_iterator:
             if len(data) == 2:
                 stream_data, mem_data = data
-                x = torch.cat([stream_data["image"], mem_data["image"]])
+                x = torch.cat([stream_data["data"], mem_data["data"]])
                 y = torch.cat([stream_data["label"], mem_data["label"]])
             else:
-                x = data["image"]
+                x = data["data"]
                 y = data["label"]
 
             x = x.to(self.device)
