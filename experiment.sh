@@ -76,6 +76,18 @@ elif [ "$DATASET" == "imagenet" ]; then
     else
         N_INIT_CLS=100 N_CLS_A_TASK=100 N_TASKS=10
     fi
+# 嗯造PDW数据集，想办法读成图片吧，咋办
+elif [ "$DATASET" == "pdw"]; then
+    TOTAL=50000 N_VAL=0  N_CLASS=4 TOPK=1
+    MODEL_NAME="resnet34"
+    N_EPOCH=256; BATCHSIZE=16; LR=0.05 OPT_NAME="sgd" SCHED_NAME="multistep"
+    if [ "${MODE_LIST[0]}" == "joint" ]; then
+        N_INIT_CLS=4 N_CLS_A_TASK=4 N_TASKS=1
+    elif [[ "$EXP" == *"blurry"* ]]; then
+        N_INIT_CLS=2 N_CLS_A_TASK=4 N_TASKS=10
+    else
+        N_INIT_CLS=2 N_CLS_A_TASK=4 N_TASKS=10
+    fi    
 else
     echo "Undefined setting"
     exit 1
