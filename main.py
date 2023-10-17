@@ -152,7 +152,7 @@ def main():
 
             method.update_memory(cur_iter)
 
-            # No stremed training data, train with only memory_list
+            # No streamed training data, train with only memory_list
             method.set_current_dataset([], cur_test_datalist)
 
             logger.info("Train over memory")
