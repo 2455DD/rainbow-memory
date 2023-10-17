@@ -4,9 +4,9 @@ from models.layers import FinalBlock
 class RNNNet(nn.Module):
     def __init__(self, opt) -> None:
         super(RNNNet,self).__init__()
-        self.initial = nn.Conv1d(4,16,5)# CNN临时大小
-        self.rnn = nn.RNN(4,16,5,batch_first=True)       # RNN临时层数，Watchout
-        self.fc = FinalBlock(opt=opt,in_channels=32)
+        self.initial = nn.Conv1d(4,opt.width,5)# CNN临时大小,opt.width=16
+        self.rnn = nn.RNN(opt.width,opt.width,5,batch_first=True)       # RNN临时层数，Watchout
+        self.fc = FinalBlock(opt=opt,in_channels=opt.width*2)
         self.pool = nn.AdaptiveAvgPool1d(1)
         
     def forward(self,x):

@@ -65,6 +65,7 @@ def select_model(model_name, dataset, num_classes=None):
         model_class = getattr(imagenet, "ResNet")
     elif "pdw" in dataset:
         model_class = getattr(pdw,"RNNNet")
+        opt["in_channels"] = 4
     else:
         raise NotImplementedError(
             "Please select the appropriate datasets (mnist, cifar10, cifar100, imagenet)"
@@ -78,6 +79,8 @@ def select_model(model_name, dataset, num_classes=None):
         opt["depth"] = 34
     elif model_name == "mlp400":
         opt["width"] = 400
+    elif model_name == "rnnnet":
+        opt["width"] = 16 # RNN channel 
     else:
         raise NotImplementedError(
             "Please choose the model name in [resnet18, resnet32, resnet34]"
