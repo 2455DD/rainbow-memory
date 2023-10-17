@@ -15,7 +15,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from methods.finetune import Finetune
-from utils.data_loader import ImageDataset
+from utils.data_loader import SequenceDataset
 from utils.train_utils import select_model
 from torch.utils.tensorboard import SummaryWriter
 
@@ -211,7 +211,7 @@ class BiasCorrection(Finetune):
             self.construct_correction_examplers(num_sample=n_sample)
 
             correction_df = pd.DataFrame(self.valid_list)
-            correction_dataset = ImageDataset(
+            correction_dataset = SequenceDataset(
                 correction_df, dataset=self.dataset, transform=self.train_transform
             )
             correction_loader = DataLoader(
@@ -337,7 +337,7 @@ class BiasCorrection(Finetune):
 
     def evaluation_ext(self, test_list):
         # evaluation from out of class
-        test_dataset = ImageDataset(
+        test_dataset = SequenceDataset(
             pd.DataFrame(test_list),
             dataset=self.dataset,
             transform=self.test_transform,
