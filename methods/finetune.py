@@ -19,7 +19,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 
 from utils.augment import Cutout, Invert, Solarize, select_autoaugment
-from utils.data_loader import ImageDataset
+from utils.data_loader import SequenceDataset
 from utils.data_loader import cutmix_data
 from utils.train_utils import select_model, select_optimizer
 
@@ -66,7 +66,8 @@ class Finetune:
         self.feature_size = kwargs["feature_size"]
 
         self.train_transform = train_transform
-        self.cutmix = "cutmix" in kwargs["transforms"]
+        # self.cutmix = "cutmix" in kwargs["transforms"]
+        self.cutmix = False
         self.test_transform = test_transform
 
         self.prev_streamed_list = []
@@ -191,7 +192,7 @@ class Finetune:
         train_loader = None
         test_loader = None
         if train_list is not None and len(train_list) > 0:
-            train_dataset = ImageDataset(
+            train_dataset = SequenceDataset(
                 pd.DataFrame(train_list),
                 dataset=self.dataset,
                 transform=self.train_transform,
@@ -206,7 +207,7 @@ class Finetune:
             )
 
         if test_list is not None:
-            test_dataset = ImageDataset(
+            test_dataset = SequenceDataset(
                 pd.DataFrame(test_list),
                 dataset=self.dataset,
                 transform=self.test_transform,
@@ -284,7 +285,7 @@ class Finetune:
         self.model.train()
         for i, data in enumerate(train_loader):
             for pass_ in range(n_passes):
-                x = data["image"]
+                x = data["data"]
                 y = data["label"]
                 x = x.to(self.device)
                 y = y.to(self.device)
@@ -292,7 +293,7 @@ class Finetune:
                 optimizer.zero_grad()
 
                 do_cutmix = self.cutmix and np.random.rand(1) < 0.5
-                if do_cutmix:
+                if do_cutmix and False:
                     x, labels_a, labels_b, lam = cutmix_data(x=x, y=y, alpha=1.0)
                     logit = self.model(x)
                     loss = lam * criterion(logit, labels_a) + (1 - lam) * criterion(
@@ -315,7 +316,7 @@ class Finetune:
 
     def evaluation_ext(self, test_list):
         # evaluation from out of class
-        test_dataset = ImageDataset(
+        test_dataset = SequenceDataset(
             pd.DataFrame(test_list),
             dataset=self.dataset,
             transform=self.test_transform,
@@ -336,7 +337,7 @@ class Finetune:
         self.model.eval()
         with torch.no_grad():
             for i, data in enumerate(test_loader):
-                x = data["image"]
+                x = data["data"]
                 y = data["label"]
                 x = x.to(self.device)
                 y = y.to(self.device)
@@ -537,7 +538,7 @@ class Finetune:
     def _compute_uncert(self, infer_list, infer_transform, uncert_name):
         batch_size = 32
         infer_df = pd.DataFrame(infer_list)
-        infer_dataset = ImageDataset(
+        infer_dataset = SequenceDataset(
             infer_df, dataset=self.dataset, transform=infer_transform
         )
         infer_loader = DataLoader(
