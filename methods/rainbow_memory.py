@@ -144,9 +144,6 @@ class RM(Finetune):
             data_iterator = train_loader
         else:
             raise NotImplementedError("None of dataloder is valid")
-        i = 0
-        data_seq = list()
-        label_seq = list()
         for data in data_iterator:
             if memory_loader is not None and train_loader is not None:
                 stream_data, mem_data = data
@@ -157,19 +154,10 @@ class RM(Finetune):
                 y = data["label"]
             # x = x.to(self.device)
             # y = y.to(self.device)
-            data_seq.append(x)
-            label_seq.append(y)
-            i += 1
-            if i%5==0:
-                x = torch.stack(data_seq,dim=2).type(torch.FloatTensor).to(self.device)
-                y = torch.stack(label_seq,dim=1).type(torch.FloatTensor).to(self.device)
-                logger.debug(f"xshape:{x.shape},yshape:{y.shape}")
-                l, c, d = self.update_model(x, y, criterion, optimizer)
-                total_loss += l
-                correct += c
-                num_data += d
-                data_seq=list()
-                label_seq=list()
+            l, c, d = self.update_model(x, y, criterion, optimizer)
+            total_loss += l
+            correct += c
+            num_data += d
 
         if train_loader is not None:
             n_batches = len(train_loader)

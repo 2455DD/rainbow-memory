@@ -14,7 +14,7 @@ import torch
 from torch.utils.data import Dataset
 
 logger = logging.getLogger()
-
+WINDOW_SIZE = 10
 
 class SequenceDataset(Dataset):
     def __init__(self, data_frame: pd.DataFrame, dataset: str, transform=None):
@@ -22,16 +22,17 @@ class SequenceDataset(Dataset):
         self.data_frame = data_frame
         self.dataset = dataset
         self.transform = None
+        self.window_size = WINDOW_SIZE
 
     def __len__(self):
-        return len(self.data_frame)
+        return len(self.data_frame) - self.window_size
 
     def __getitem__(self, idx):
         sample = dict()
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        data = self.data_frame.iloc[idx] # 这个是Collection里的json内容
+        data = self.data_frame.iloc[idx:idx+self.window_size] # 这个是Collection里的json内容
         '''
             "label": 自动化生成的东西
             "klass":类别名称,
@@ -41,11 +42,11 @@ class SequenceDataset(Dataset):
             "Param3":
             "Param4":
         '''
-        label = self.data_frame.iloc[idx].get("label", -1)
-        sample_data = data.filter(["Param1","Param2","Param3","Param4"]).to_numpy(np.float64)
+        label = self.data_frame.iloc[idx:idx+self.window_size].get("label", -1).to_numpy()
+        sample_data = data.filter(["Param1","Param2","Param3","Param4"]).to_numpy(np.float32)
         
-        sample["data"] = sample_data 
-        sample["label"] = label
+        sample["data"] = torch.tensor(sample_data,dtype=torch.float) 
+        sample["label"] = torch.tensor(label,dtype=torch.long)
         # sample["image_name"] = data_name
         return sample
 

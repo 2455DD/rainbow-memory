@@ -99,8 +99,8 @@ class Finetune:
         logger.info("Apply before_task")
         incoming_classes = pd.DataFrame(datalist)["klass"].unique().tolist()
         self.exposed_classes = list(set(self.learned_classes + incoming_classes))
-        logger.debug(f"exposed_classes:income:{incoming_classes},learned:{self.learned_classes}")
-        logger.debug(f"exposed_classes:{self.exposed_classes},self.(old)num_learning_class:{self.num_learning_class}")
+        # logger.debug(f"exposed_classes:income:{incoming_classes},learned:{self.learned_classes}")
+        # logger.debug(f"exposed_classes:{self.exposed_classes},self.(old)num_learning_class:{self.num_learning_class}")
         self.num_learning_class = max(
             len(self.exposed_classes), self.num_learning_class
         )
@@ -346,7 +346,7 @@ class Finetune:
                 logit = self.model(x)
 
                 loss = criterion(logit, y)
-                pred = torch.argmax(logit, dim=-1)
+                pred = torch.argmax(logit, dim=1)
                 _, preds = logit.topk(self.topk, 1, True, True)
 
                 total_correct += torch.sum(preds == y.unsqueeze(1)).item()
@@ -526,12 +526,12 @@ class Finetune:
         if num_rest_slots > 0:
             logger.warning("Fill the unused slots by breaking the equilibrium.")
             ret += (
-                sample_df[~sample_df.file_name.isin(pd.DataFrame(ret).file_name)]
+                sample_df[~sample_df.TOA.isin(pd.DataFrame(ret).TOA)]
                 .sample(n=num_rest_slots)
                 .to_dict(orient="records")
             )
 
-        num_dups = pd.DataFrame(ret).file_name.duplicated().sum()
+        num_dups = pd.DataFrame(ret).TOA.duplicated().sum()
         if num_dups > 0:
             logger.warning(f"Duplicated samples in memory: {num_dups}")
 
@@ -617,12 +617,12 @@ class Finetune:
         if num_rest_slots > 0:
             logger.warning("Fill the unused slots by breaking the equilibrium.")
             ret += (
-                sample_df[~sample_df.file_name.isin(pd.DataFrame(ret).file_name)]
+                sample_df[~sample_df.TOA.isin(pd.DataFrame(ret).TOA)]
                 .sample(n=num_rest_slots)
                 .to_dict(orient="records")
             )
 
-        num_dups = pd.DataFrame(ret).file_name.duplicated().sum()
+        num_dups = pd.DataFrame(ret).TOA.duplicated().sum()
         if num_dups > 0:
             logger.warning(f"Duplicated samples in memory: {num_dups}")
 

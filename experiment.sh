@@ -80,7 +80,7 @@ elif [ "$DATASET" == "imagenet" ]; then
 elif [ "$DATASET" == "pdw" ]; then
     TOTAL=50000 N_VAL=0  N_CLASS=4 TOPK=1
     MODEL_NAME="rnnnet"
-    N_EPOCH=256; BATCHSIZE=16; LR=0.05 OPT_NAME="sgd" SCHED_NAME="multistep"
+    N_EPOCH=256; BATCHSIZE=16; LR=0.00005 OPT_NAME="sgd" SCHED_NAME="multistep"
     if [ "${MODE_LIST[0]}" == "joint" ]; then
         N_INIT_CLS=4 N_CLS_A_TASK=4 N_TASKS=1
     elif [[ "$EXP" == *"blurry"* ]]; then

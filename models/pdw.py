@@ -39,16 +39,17 @@ class RNNNet(nn.Module):
         
         
     def forward(self,x):
-        logger.debug(f"x.shape:{x.shape}")
+        x = x.permute(0,2,1)
+        # logger.debug(f"x.shape:{x.shape}") # B*Lin*4
         # out = self.initial(x.permute(0,2,1))   #B*4*Lin   -> B*Lout*4 -> B*Lout*4
-        out = self.initial(x)   #B*4*Lin   -> B*Lout*4 -> B*Lout*4
+        out = self.initial(x)   #B*4*Lin    -> B*Lout*4
         out = out.permute(0,2,1)#B*16*Lout -> B*Lout*16
-        logger.debug(f"before rnn x.shape:{out.shape}")
+        # logger.debug(f"before rnn x.shape:{out.shape}")
         out,_ = self.rnn(out) #B*Lout*16 -> B*Lout*16
         # out = self.pool(out)
         out = out.permute(0,2,1) #B*Lout*num_classes -> B*num_classes*Lout
-        logger.debug(f"before fc x.shape:{out.shape}")
+        # logger.debug(f"before fc x.shape:{out.shape}")
         out = self.fc(out)
         fin_out = self.act(out)
-        logging.debug(f"out shape:{fin_out.shape}")
-        return torch.softmax(fin_out,dim=1)
+        # logging.debug(f"out shape:{fin_out.shape}")
+        return fin_out
