@@ -122,7 +122,7 @@ class RM(Finetune):
             )
         else:
             logit = self.model(x)
-            loss = criterion(logit, y)
+            loss = criterion(logit, y.type(torch.LongTensor))
 
         _, preds = logit.topk(self.topk, 1, True, True)
 
@@ -144,23 +144,32 @@ class RM(Finetune):
             data_iterator = train_loader
         else:
             raise NotImplementedError("None of dataloder is valid")
-
+        i = 0
+        data_seq = list()
+        label_seq = list()
         for data in data_iterator:
-            if len(data) == 2:
+            if memory_loader is not None and train_loader is not None:
                 stream_data, mem_data = data
                 x = torch.cat([stream_data["data"], mem_data["data"]])
                 y = torch.cat([stream_data["label"], mem_data["label"]])
             else:
                 x = data["data"]
                 y = data["label"]
-
-            x = x.to(self.device)
-            y = y.to(self.device)
-
-            l, c, d = self.update_model(x, y, criterion, optimizer)
-            total_loss += l
-            correct += c
-            num_data += d
+            # x = x.to(self.device)
+            # y = y.to(self.device)
+            data_seq.append(x)
+            label_seq.append(y)
+            i += 1
+            if i%5==0:
+                x = torch.stack(data_seq,dim=2).type(torch.FloatTensor).to(self.device)
+                y = torch.stack(label_seq,dim=1).type(torch.FloatTensor).to(self.device)
+                logger.debug(f"xshape:{x.shape},yshape:{y.shape}")
+                l, c, d = self.update_model(x, y, criterion, optimizer)
+                total_loss += l
+                correct += c
+                num_data += d
+                data_seq=list()
+                label_seq=list()
 
         if train_loader is not None:
             n_batches = len(train_loader)

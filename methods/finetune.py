@@ -99,6 +99,8 @@ class Finetune:
         logger.info("Apply before_task")
         incoming_classes = pd.DataFrame(datalist)["klass"].unique().tolist()
         self.exposed_classes = list(set(self.learned_classes + incoming_classes))
+        logger.debug(f"exposed_classes:income:{incoming_classes},learned:{self.learned_classes}")
+        logger.debug(f"exposed_classes:{self.exposed_classes},self.(old)num_learning_class:{self.num_learning_class}")
         self.num_learning_class = max(
             len(self.exposed_classes), self.num_learning_class
         )
@@ -119,7 +121,7 @@ class Finetune:
             logger.info("Reset model parameters")
             self.model = select_model(self.model_name, self.dataset, new_out_features)
         else:
-            self.model.fc = nn.Linear(in_features, new_out_features)
+            self.model.fc = nn.Conv1d(in_features,new_out_features,kernel_size=1,bias=False)
         self.params = {
             n: p for n, p in list(self.model.named_parameters())[:-2] if p.requires_grad
         }  # For regularzation methods

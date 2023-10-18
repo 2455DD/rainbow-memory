@@ -42,7 +42,7 @@ class SequenceDataset(Dataset):
             "Param4":
         '''
         label = self.data_frame.iloc[idx].get("label", -1)
-        sample_data = data.filter(["Param1","Param2","Param3","Param4"])
+        sample_data = data.filter(["Param1","Param2","Param3","Param4"]).to_numpy(np.float64)
         
         sample["data"] = sample_data 
         sample["label"] = label
@@ -149,6 +149,7 @@ def get_statistics(dataset: str):
         "TinyImagenet": (0.4802, 0.4481, 0.3975),
         "imagenet100": (0.485, 0.456, 0.406),
         "imagenet1000": (0.485, 0.456, 0.406),
+        "pdw": (0.485, 0.456, 0.406),
     }
 
     std = {
@@ -163,6 +164,7 @@ def get_statistics(dataset: str):
         "TinyImagenet": (0.2302, 0.2265, 0.2262),
         "imagenet100": (0.229, 0.224, 0.225),
         "imagenet1000": (0.229, 0.224, 0.225),
+        "pdw": (0.229, 0.224, 0.225),
     }
 
     classes = {
@@ -207,6 +209,7 @@ def get_statistics(dataset: str):
         "TinyImagenet": 64,
         "imagenet100": 224,
         "imagenet1000": 224,
+        "pdw": 224,
     }
     return (
         mean[dataset],
