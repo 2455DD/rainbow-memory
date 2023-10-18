@@ -1,1 +1,4 @@
 collections/**
+**/__pycache__/**
+tensorboard/**
+logs/**
